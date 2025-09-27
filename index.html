@@ -8,55 +8,29 @@
       font-family: Arial, sans-serif;
       text-align: center;
       background: #b8ee82;
-      background-image: url(imagenes/martu.jpg);
+      background-image: url(imagenes/lapampa.jpeg);
+      background-size:contain;
+      background-position: center;
     }
     h1 {
       color: #0b0c0b;
+      text-shadow: 1px 1px 2px #fff;
     }
-    .ruleta-container {
-      position: relative;
-      width: 400px;
-      height: 400px;
-      margin: 20px auto;
-    }
-    .ruleta {
-      width: 100%;
-      height: 100%;
+    canvas {
       border-radius: 50%;
-      border: 8px solid #333;
-      position: relative;
-      overflow: hidden;
-      transition: transform 3s ease-out;
-    }
-    .ruleta .sector {
-      position: absolute;
-      width: 50%;
-      height: 50%;
-      top: 50%;
-      left: 50%;
-      transform-origin: 0% 0%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-weight: bold;
-      font-size: 18px;
-      text-shadow: 2px 2px 4px #000;
-    }
-    .sector div {
-      transform-origin: center;
+      border: 6px solid #333;
+      margin-top: 20px;
+      box-shadow: 0px 0px 15px rgba(0,0,0,0.4);
     }
     .flecha {
-      position: absolute;
-      bottom: -40px;
-      left: 50%;
-      transform: translateX(-50%) rotate(180deg);
-      width: 0; 
-      height: 0; 
+      width: 0;
+      height: 0;
       border-left: 20px solid transparent;
       border-right: 20px solid transparent;
       border-top: 40px solid red;
-      z-index: 10;
+      margin: 0 auto;
+      position: relative;
+      top: -10px;
     }
     button {
       margin: 15px;
@@ -65,13 +39,18 @@
       cursor: pointer;
       border-radius: 8px;
       background: #4caf50;
-      color: rgb(14, 13, 13);
+      color: #fff;
       border: none;
     }
     #pregunta {
       margin-top: 20px;
       font-size: 18px;
       font-weight: bold;
+      color: #000;
+      background: rgba(58, 212, 34, 0.8);
+      padding: 10px;
+      border-radius: 8px;
+      display: inline-block;
     }
     .opcion {
       display: block;
@@ -79,8 +58,9 @@
       padding: 10px;
       width: 60%;
       border-radius: 8px;
-      background: #e0e0e0;
+      background: #baba02;
       cursor: pointer;
+      border: 1px solid #060606;
     }
     #resultado {
       margin-top: 15px;
@@ -92,37 +72,23 @@
 </head>
 <body>
   <h1>Juego de Preguntas - La Pampa</h1>
-  
-  <div class="ruleta-container">
-    <div class="flecha"></div>
-    <div class="ruleta" id="ruleta">
-      <div class="sector" style="transform: rotate(144deg) skewY(-54deg); background:#99ff99;">
-        <div style="transform: skewY(54deg) rotate(-180deg);">Suelo</div>
-      </div>
-      <div class="sector" style="transform: rotate(216deg) skewY(-54deg); background:#ffff99;">
-        <div style="transform: skewY(54deg) rotate(-252deg);">Región</div>
-      </div>
-      <div class="sector" style="transform: rotate(288deg) skewY(-54deg); background:#ffcc99;">
-        <div style="transform: skewY(54deg) rotate(-324deg);">Clima</div>
-      </div>
-      <div class="sector" style="transform: rotate(0deg) skewY(-54deg); background:#ff9999;">
-        <div style="transform: skewY(54deg) rotate(-36deg);">Fauna</div>
-      </div>
-      <div class="sector" style="transform: rotate(72deg) skewY(-54deg); background:#99ccff;">
-        <div style="transform: skewY(54deg) rotate(-108deg);">Flora</div>
-      </div>
-    </div>
-  </div>
-  
+
+  <div class="flecha"></div>
+  <canvas id="ruleta" width="400" height="400"></canvas><br>
+
   <button id="btnGirar" onclick="girarRuleta()">🎯 Girar Ruleta</button>
   <button id="btnReiniciar" onclick="reiniciarJuego()" style="display:none; background:#2196f3;">🔄 Reiniciar</button>
-
+<br>
   <div id="pregunta"></div>
   <div id="opciones"></div>
   <div id="resultado"></div>
 
   <script>
     let temaSeleccionado = "";
+    let anguloActual = 0;
+
+    const temas = ["Suelo", "Región", "Clima", "Fauna", "Flora"];
+    const colores = ["#99ff99", "#ffff99", "#ffcc99", "#ff9999", "#99ccff"];
 
     const preguntas = {
       flora: [
@@ -134,7 +100,7 @@
       suelo: [
         { pregunta: "El suelo pampeano es principalmente...", opciones: ["Arenoso", "Loéssico fértil", "Rocoso"], respuesta: "Loéssico fértil" }
       ],
-      árbol: [
+      región: [
         { pregunta: "¿Qué provincia compone esta Región?", opciones: ["Santa Fe", "Córdoba", "San Luis"], respuesta: "San Luis" }
       ],
       clima: [
@@ -142,35 +108,57 @@
       ]
     };
 
+    const canvas = document.getElementById("ruleta");
+    const ctx = canvas.getContext("2d");
+    const arc = (2 * Math.PI) / temas.length;
+
+    function dibujarRuleta() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < temas.length; i++) {
+        const angle = anguloActual + i * arc;
+        ctx.beginPath();
+        ctx.fillStyle = colores[i];
+        ctx.moveTo(200, 200);
+        ctx.arc(200, 200, 200, angle, angle + arc);
+        ctx.fill();
+        ctx.save();
+        ctx.translate(200, 200);
+        ctx.rotate(angle + arc / 2);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#000";
+        ctx.font = "bold 18px Arial";
+        ctx.fillText(temas[i], 180, 10);
+        ctx.restore();
+      }
+    }
+
     function girarRuleta() {
-      const ruleta = document.getElementById("ruleta");
+      const vueltas = Math.floor(Math.random() * 3) + 4; // entre 4 y 6 vueltas
+      const anguloExtra = Math.random() * 2 * Math.PI;
+      const anguloFinal = anguloActual + vueltas * 2 * Math.PI + anguloExtra;
+      const duracion = 3000;
+      const inicio = Date.now();
 
-      // siempre un giro completo + ángulo aleatorio
-      const grados = 360 + Math.floor(Math.random() * 360);
-      ruleta.style.transition = "transform 3s ease-out";
-      ruleta.style.transform = `rotate(${grados}deg)`;
-
-      setTimeout(() => {
-        const angulo = grados % 360;
-
-        if (angulo >= 0 && angulo < 72) temaSeleccionado = "fauna";
-        else if (angulo >= 72 && angulo < 144) temaSeleccionado = "flora";
-        else if (angulo >= 144 && angulo < 216) temaSeleccionado = "suelo";
-        else if (angulo >= 216 && angulo < 288) temaSeleccionado = "árbol";
-        else temaSeleccionado = "clima";
-
-        mostrarPregunta();
-
-        // reiniciar posición de la ruleta
-        ruleta.style.transition = "none";
-        ruleta.style.transform = "rotate(0deg)";
-      }, 3000);
+      function animar() {
+        const ahora = Date.now();
+        const progreso = Math.min((ahora - inicio) / duracion, 1);
+        anguloActual = anguloFinal * progreso;
+        dibujarRuleta();
+        if (progreso < 1) {
+          requestAnimationFrame(animar);
+        } else {
+          const indice = Math.floor(((2 * Math.PI - (anguloFinal % (2 * Math.PI))) / arc) % temas.length);
+          temaSeleccionado = temas[indice].toLowerCase();
+          mostrarPregunta();
+        }
+      }
+      animar();
     }
 
     function mostrarPregunta() {
       const lista = preguntas[temaSeleccionado];
       const pregunta = lista[Math.floor(Math.random() * lista.length)];
-      document.getElementById("pregunta").innerText = "📌 " + pregunta.pregunta;
+      document.getElementById("pregunta").innerText = "📌" + pregunta.pregunta;
       const opcionesDiv = document.getElementById("opciones");
       opcionesDiv.innerHTML = "";
       document.getElementById("resultado").innerText = "";
@@ -190,7 +178,6 @@
       } else {
         document.getElementById("resultado").innerText = "❌ Incorrecto, la respuesta era: " + correcta;
       }
-      // habilitar reinicio manual
       document.getElementById("btnReiniciar").style.display = "inline-block";
     }
 
@@ -200,19 +187,11 @@
       document.getElementById("opciones").innerHTML = "";
       document.getElementById("resultado").innerText = "";
       document.getElementById("btnReiniciar").style.display = "none";
-      document.getElementById("ruleta").style.transform = "rotate(0deg)";
+      anguloActual = 0;
+      dibujarRuleta();
     }
+
+    dibujarRuleta();
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
