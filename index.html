@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ruleta de Preguntas - La Pampa</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #b8ee82;
+      background-image: url(imagenes/martu.jpg);
+    }
+    h1 {
+      color: #0b0c0b;
+    }
+    .ruleta-container {
+      position: relative;
+      width: 400px;
+      height: 400px;
+      margin: 20px auto;
+    }
+    .ruleta {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 8px solid #333;
+      position: relative;
+      overflow: hidden;
+      transition: transform 3s ease-out;
+    }
+    .ruleta .sector {
+      position: absolute;
+      width: 50%;
+      height: 50%;
+      top: 50%;
+      left: 50%;
+      transform-origin: 0% 0%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: bold;
+      font-size: 18px;
+      text-shadow: 2px 2px 4px #000;
+    }
+    .sector div {
+      transform-origin: center;
+    }
+    .flecha {
+      position: absolute;
+      bottom: -40px;
+      left: 50%;
+      transform: translateX(-50%) rotate(180deg);
+      width: 0; 
+      height: 0; 
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-top: 40px solid red;
+      z-index: 10;
+    }
+    button {
+      margin: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 8px;
+      background: #4caf50;
+      color: rgb(14, 13, 13);
+      border: none;
+    }
+    #pregunta {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .opcion {
+      display: block;
+      margin: 10px auto;
+      padding: 10px;
+      width: 60%;
+      border-radius: 8px;
+      background: #e0e0e0;
+      cursor: pointer;
+    }
+    #resultado {
+      margin-top: 15px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #000;
+    }
+  </style>
+</head>
+<body>
+  <h1>Juego de Preguntas - La Pampa</h1>
+  
+  <div class="ruleta-container">
+    <div class="flecha"></div>
+    <div class="ruleta" id="ruleta">
+      <div class="sector" style="transform: rotate(144deg) skewY(-54deg); background:#99ff99;">
+        <div style="transform: skewY(54deg) rotate(-180deg);">Suelo</div>
+      </div>
+      <div class="sector" style="transform: rotate(216deg) skewY(-54deg); background:#ffff99;">
+        <div style="transform: skewY(54deg) rotate(-252deg);">Región</div>
+      </div>
+      <div class="sector" style="transform: rotate(288deg) skewY(-54deg); background:#ffcc99;">
+        <div style="transform: skewY(54deg) rotate(-324deg);">Clima</div>
+      </div>
+      <div class="sector" style="transform: rotate(0deg) skewY(-54deg); background:#ff9999;">
+        <div style="transform: skewY(54deg) rotate(-36deg);">Fauna</div>
+      </div>
+      <div class="sector" style="transform: rotate(72deg) skewY(-54deg); background:#99ccff;">
+        <div style="transform: skewY(54deg) rotate(-108deg);">Flora</div>
+      </div>
+    </div>
+  </div>
+  
+  <button id="btnGirar" onclick="girarRuleta()">🎯 Girar Ruleta</button>
+  <button id="btnReiniciar" onclick="reiniciarJuego()" style="display:none; background:#2196f3;">🔄 Reiniciar</button>
+
+  <div id="pregunta"></div>
+  <div id="opciones"></div>
+  <div id="resultado"></div>
+
+  <script>
+    let temaSeleccionado = "";
+
+    const preguntas = {
+      flora: [
+        { pregunta: "¿Cuál árbol es característico del caldenal pampeano?", opciones: ["Caldén", "Pino", "Quebracho"], respuesta: "Caldén" }
+      ],
+      fauna: [
+        { pregunta: "¿Qué ave es típica de la región pampeana?", opciones: ["Ñandú", "Cóndor", "Águila"], respuesta: "Ñandú" }
+      ],
+      suelo: [
+        { pregunta: "El suelo pampeano es principalmente...", opciones: ["Arenoso", "Loéssico fértil", "Rocoso"], respuesta: "Loéssico fértil" }
+      ],
+      árbol: [
+        { pregunta: "¿Qué provincia compone esta Región?", opciones: ["Santa Fe", "Córdoba", "San Luis"], respuesta: "San Luis" }
+      ],
+      clima: [
+        { pregunta: "¿Qué tipo de clima predomina en La Pampa?", opciones: ["Templado Húmedo", "Tropical húmedo", "Polar"], respuesta: "Templado Húmedo" }
+      ]
+    };
+
+    function girarRuleta() {
+      const ruleta = document.getElementById("ruleta");
+
+      // siempre un giro completo + ángulo aleatorio
+      const grados = 360 + Math.floor(Math.random() * 360);
+      ruleta.style.transition = "transform 3s ease-out";
+      ruleta.style.transform = `rotate(${grados}deg)`;
+
+      setTimeout(() => {
+        const angulo = grados % 360;
+
+        if (angulo >= 0 && angulo < 72) temaSeleccionado = "fauna";
+        else if (angulo >= 72 && angulo < 144) temaSeleccionado = "flora";
+        else if (angulo >= 144 && angulo < 216) temaSeleccionado = "suelo";
+        else if (angulo >= 216 && angulo < 288) temaSeleccionado = "árbol";
+        else temaSeleccionado = "clima";
+
+        mostrarPregunta();
+
+        // reiniciar posición de la ruleta
+        ruleta.style.transition = "none";
+        ruleta.style.transform = "rotate(0deg)";
+      }, 3000);
+    }
+
+    function mostrarPregunta() {
+      const lista = preguntas[temaSeleccionado];
+      const pregunta = lista[Math.floor(Math.random() * lista.length)];
+      document.getElementById("pregunta").innerText = "📌 " + pregunta.pregunta;
+      const opcionesDiv = document.getElementById("opciones");
+      opcionesDiv.innerHTML = "";
+      document.getElementById("resultado").innerText = "";
+
+      pregunta.opciones.forEach(op => {
+        const btn = document.createElement("button");
+        btn.classList.add("opcion");
+        btn.innerText = op;
+        btn.onclick = () => responder(op, pregunta.respuesta);
+        opcionesDiv.appendChild(btn);
+      });
+    }
+
+    function responder(opcion, correcta) {
+      if (opcion === correcta) {
+        document.getElementById("resultado").innerText = "✅ ¡Correcto!";
+      } else {
+        document.getElementById("resultado").innerText = "❌ Incorrecto, la respuesta era: " + correcta;
+      }
+      // habilitar reinicio manual
+      document.getElementById("btnReiniciar").style.display = "inline-block";
+    }
+
+    function reiniciarJuego() {
+      temaSeleccionado = "";
+      document.getElementById("pregunta").innerText = "";
+      document.getElementById("opciones").innerHTML = "";
+      document.getElementById("resultado").innerText = "";
+      document.getElementById("btnReiniciar").style.display = "none";
+      document.getElementById("ruleta").style.transform = "rotate(0deg)";
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
